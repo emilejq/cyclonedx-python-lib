@@ -63,7 +63,7 @@ class BaseOutput(ABC):
         self._bom = bom
 
     @abstractmethod
-    def generate(self, force_regeneration: bool = False) -> None:
+    def generate(self, bom_format, force_regeneration: bool = False) -> None:
         pass
 
     @abstractmethod

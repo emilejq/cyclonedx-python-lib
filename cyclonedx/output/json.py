@@ -32,6 +32,7 @@ from ..schema.schema import (
     SchemaVersion1Dot2,
     SchemaVersion1Dot3,
     SchemaVersion1Dot4,
+    SchemaVersion1Dot4CbomVersion1Dot0
 )
 from . import BaseOutput
 
@@ -46,7 +47,7 @@ class Json(BaseOutput, BaseSchemaVersion):
     def schema_version(self) -> SchemaVersion:
         return self.schema_version_enum
 
-    def generate(self, force_regeneration: bool = False) -> None:
+    def generate(self, bom_format, force_regeneration: bool = False) -> None:
         # New Way
         schema_uri: Optional[str] = self._get_schema_uri()
         if not schema_uri:
@@ -55,7 +56,7 @@ class Json(BaseOutput, BaseSchemaVersion):
 
         _json_core = {
             '$schema': schema_uri,
-            'bomFormat': 'CycloneDX',
+            'bomFormat': bom_format,
             'specVersion': self.schema_version.to_version()
         }
         _view = SCHEMA_VERSIONS.get(self.get_schema_version())
@@ -76,8 +77,8 @@ class Json(BaseOutput, BaseSchemaVersion):
             self.generated = True
             return
 
-    def output_as_string(self) -> str:
-        self.generate()
+    def output_as_string(self, bom_format='CycloneDX') -> str:
+        self.generate(bom_format)
         return self._json_output
 
     @abstractmethod
@@ -113,3 +114,9 @@ class JsonV1Dot4(Json, SchemaVersion1Dot4):
 
     def _get_schema_uri(self) -> Optional[str]:
         return 'http://cyclonedx.org/schema/bom-1.4.schema.json'
+
+
+class JsonV1Dot4CbomV1Dot0(Json, SchemaVersion1Dot4CbomVersion1Dot0):
+
+    def _get_schema_uri(self) -> Optional[str]:
+        return 'https://raw.githubusercontent.com/IBM/CBOM/main/bom-1.4-cbom-1.0.schema.json'

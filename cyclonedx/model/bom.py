@@ -33,7 +33,7 @@ from ..schema.schema import (
     SchemaVersion1Dot1,
     SchemaVersion1Dot2,
     SchemaVersion1Dot3,
-    SchemaVersion1Dot4,
+    SchemaVersion1Dot4, SchemaVersion1Dot4CbomVersion1Dot0,
 )
 from . import (
     ExternalReference,
@@ -195,6 +195,7 @@ class BomMetaData:
     @property  # type: ignore[misc]
     @serializable.view(SchemaVersion1Dot3)
     @serializable.view(SchemaVersion1Dot4)
+    @serializable.view(SchemaVersion1Dot4CbomVersion1Dot0)
     @serializable.xml_array(serializable.XmlArraySerializationType.FLAT, 'licenses')
     @serializable.xml_sequence(7)
     def licenses(self) -> "SortedSet[LicenseChoice]":
@@ -213,6 +214,7 @@ class BomMetaData:
     @property  # type: ignore[misc]
     @serializable.view(SchemaVersion1Dot3)
     @serializable.view(SchemaVersion1Dot4)
+    @serializable.view(SchemaVersion1Dot4CbomVersion1Dot0)
     @serializable.xml_array(serializable.XmlArraySerializationType.NESTED, 'property')
     @serializable.xml_sequence(8)
     def properties(self) -> "SortedSet[Property]":
@@ -303,6 +305,7 @@ class Bom:
     @serializable.view(SchemaVersion1Dot2)
     @serializable.view(SchemaVersion1Dot3)
     @serializable.view(SchemaVersion1Dot4)
+    @serializable.view(SchemaVersion1Dot4CbomVersion1Dot0)
     @serializable.xml_attribute()
     def serial_number(self) -> UUID:
         """
@@ -322,6 +325,7 @@ class Bom:
     @serializable.view(SchemaVersion1Dot2)
     @serializable.view(SchemaVersion1Dot3)
     @serializable.view(SchemaVersion1Dot4)
+    @serializable.view(SchemaVersion1Dot4CbomVersion1Dot0)
     @serializable.xml_sequence(1)
     def metadata(self) -> BomMetaData:
         """
@@ -401,6 +405,7 @@ class Bom:
     @serializable.view(SchemaVersion1Dot2)
     @serializable.view(SchemaVersion1Dot3)
     @serializable.view(SchemaVersion1Dot4)
+    @serializable.view(SchemaVersion1Dot4CbomVersion1Dot0)
     @serializable.xml_array(serializable.XmlArraySerializationType.NESTED, 'service')
     @serializable.xml_sequence(3)
     def services(self) -> "SortedSet[Service]":
@@ -421,6 +426,7 @@ class Bom:
     @serializable.view(SchemaVersion1Dot2)
     @serializable.view(SchemaVersion1Dot3)
     @serializable.view(SchemaVersion1Dot4)
+    @serializable.view(SchemaVersion1Dot4CbomVersion1Dot0)
     @serializable.xml_array(serializable.XmlArraySerializationType.NESTED, 'reference')
     @serializable.xml_sequence(4)
     def external_references(self) -> "SortedSet[ExternalReference]":
@@ -476,6 +482,7 @@ class Bom:
 
     @property  # type: ignore[misc]
     @serializable.view(SchemaVersion1Dot4)
+    @serializable.view(SchemaVersion1Dot4CbomVersion1Dot0)
     @serializable.xml_array(serializable.XmlArraySerializationType.NESTED, 'vulnerability')
     @serializable.xml_sequence(8)
     def vulnerabilities(self) -> "SortedSet[Vulnerability]":
@@ -504,6 +511,7 @@ class Bom:
     @serializable.view(SchemaVersion1Dot2)
     @serializable.view(SchemaVersion1Dot3)
     @serializable.view(SchemaVersion1Dot4)
+    @serializable.view(SchemaVersion1Dot4CbomVersion1Dot0)
     @serializable.xml_array(serializable.XmlArraySerializationType.NESTED, 'dependency')
     @serializable.xml_sequence(5)
     def dependencies(self) -> "SortedSet[Dependency]":

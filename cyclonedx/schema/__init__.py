@@ -28,6 +28,7 @@ class SchemaVersion(str, Enum):
     V1_2: str = 'V1Dot2'
     V1_3: str = 'V1Dot3'
     V1_4: str = 'V1Dot4'
+    V1_4_CBOM_V1_0: str = 'V1Dot4CbomV1Dot0'
 
     def to_version(self) -> str:
         """
@@ -36,4 +37,9 @@ class SchemaVersion(str, Enum):
         Returns:
             `str` version
         """
-        return f'{self.value[1]}.{self.value[5]}'
+        if 'cbom' in self.value.lower():
+            cdx_version, cbom_version = self.value.lower().split('cbom')
+            return f'{cdx_version[1]}.{cdx_version[5]}.{cbom_version[1]}.{cbom_version[5]}'
+        else:
+            return f'{self.value[1]}.{self.value[5]}'
+

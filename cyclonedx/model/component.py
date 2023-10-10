@@ -35,6 +35,7 @@ from ..schema.schema import (
     SchemaVersion1Dot2,
     SchemaVersion1Dot3,
     SchemaVersion1Dot4,
+    SchemaVersion1Dot4CbomVersion1Dot0
 )
 from ..serialization import BomRefHelper, PackageUrl
 from . import (
@@ -52,6 +53,7 @@ from . import (
     sha1sum,
 )
 from .bom_ref import BomRef
+from .crypto import CryptoProperties
 from .dependency import Dependable
 from .issue import IssueType
 from .release_note import ReleaseNotes
@@ -264,6 +266,7 @@ class ComponentType(str, Enum):
     FRAMEWORK = 'framework'
     LIBRARY = 'library'
     OPERATING_SYSTEM = 'operating-system'
+    CRYPTO_ASSET = 'crypto-asset'
 
 
 class Diff:
@@ -531,6 +534,7 @@ class Pedigree:
     @serializable.view(SchemaVersion1Dot2)
     @serializable.view(SchemaVersion1Dot3)
     @serializable.view(SchemaVersion1Dot4)
+    @serializable.view(SchemaVersion1Dot4CbomVersion1Dot0)
     @serializable.xml_array(serializable.XmlArraySerializationType.NESTED, 'patch')
     @serializable.xml_sequence(5)
     def patches(self) -> "SortedSet[Patch]":
@@ -762,7 +766,7 @@ class Component(Dependable):
                  properties: Optional[Iterable[Property]] = None, release_notes: Optional[ReleaseNotes] = None,
                  cpe: Optional[str] = None, swid: Optional[Swid] = None, pedigree: Optional[Pedigree] = None,
                  components: Optional[Iterable['Component']] = None, evidence: Optional[ComponentEvidence] = None,
-                 modified: bool = False,
+                 modified: bool = False, crypto_properties: Optional[CryptoProperties] = None,  # FIXME
                  # Deprecated parameters kept for backwards compatibility
                  namespace: Optional[str] = None, license_str: Optional[str] = None
                  ) -> None:
@@ -793,6 +797,7 @@ class Component(Dependable):
         self.components = components or []  # type: ignore
         self.evidence = evidence
         self.release_notes = release_notes
+        self.crypto_properties = crypto_properties
 
         # Deprecated for 1.4, but kept for some backwards compatibility
         if namespace:
@@ -853,6 +858,7 @@ class Component(Dependable):
     @serializable.view(SchemaVersion1Dot2)
     @serializable.view(SchemaVersion1Dot3)
     @serializable.view(SchemaVersion1Dot4)
+    @serializable.view(SchemaVersion1Dot4CbomVersion1Dot0)
     @serializable.xml_attribute()
     @serializable.xml_name('bom-ref')
     def bom_ref(self) -> BomRef:
@@ -871,6 +877,7 @@ class Component(Dependable):
     @serializable.view(SchemaVersion1Dot2)
     @serializable.view(SchemaVersion1Dot3)
     @serializable.view(SchemaVersion1Dot4)
+    @serializable.view(SchemaVersion1Dot4CbomVersion1Dot0)
     @serializable.xml_sequence(1)
     def supplier(self) -> Optional[OrganizationalEntity]:
         """
@@ -890,6 +897,7 @@ class Component(Dependable):
     @serializable.view(SchemaVersion1Dot2)
     @serializable.view(SchemaVersion1Dot3)
     @serializable.view(SchemaVersion1Dot4)
+    @serializable.view(SchemaVersion1Dot4CbomVersion1Dot0)
     @serializable.xml_sequence(2)
     def author(self) -> Optional[str]:
         """
@@ -1032,6 +1040,7 @@ class Component(Dependable):
     @serializable.view(SchemaVersion1Dot2)
     @serializable.view(SchemaVersion1Dot3)
     @serializable.view(SchemaVersion1Dot4)
+    @serializable.view(SchemaVersion1Dot4CbomVersion1Dot0)
     @serializable.xml_array(serializable.XmlArraySerializationType.FLAT, 'licenses')
     @serializable.xml_sequence(10)
     def licenses(self) -> "SortedSet[LicenseChoice]":
@@ -1102,6 +1111,7 @@ class Component(Dependable):
     @serializable.view(SchemaVersion1Dot2)
     @serializable.view(SchemaVersion1Dot3)
     @serializable.view(SchemaVersion1Dot4)
+    @serializable.view(SchemaVersion1Dot4CbomVersion1Dot0)
     @serializable.xml_sequence(14)
     def swid(self) -> Optional[Swid]:
         """
@@ -1131,6 +1141,7 @@ class Component(Dependable):
     @serializable.view(SchemaVersion1Dot2)
     @serializable.view(SchemaVersion1Dot3)
     @serializable.view(SchemaVersion1Dot4)
+    @serializable.view(SchemaVersion1Dot4CbomVersion1Dot0)
     @serializable.xml_sequence(16)
     def pedigree(self) -> Optional[Pedigree]:
         """
@@ -1151,6 +1162,7 @@ class Component(Dependable):
     @serializable.view(SchemaVersion1Dot2)
     @serializable.view(SchemaVersion1Dot3)
     @serializable.view(SchemaVersion1Dot4)
+    @serializable.view(SchemaVersion1Dot4CbomVersion1Dot0)
     @serializable.xml_array(serializable.XmlArraySerializationType.NESTED, 'reference')
     @serializable.xml_sequence(17)
     def external_references(self) -> "SortedSet[ExternalReference]":
@@ -1170,6 +1182,7 @@ class Component(Dependable):
     @property  # type: ignore[misc]
     @serializable.view(SchemaVersion1Dot3)
     @serializable.view(SchemaVersion1Dot4)
+    @serializable.view(SchemaVersion1Dot4CbomVersion1Dot0)
     @serializable.xml_array(serializable.XmlArraySerializationType.NESTED, 'property')
     @serializable.xml_sequence(18)
     def properties(self) -> "SortedSet[Property]":
@@ -1207,6 +1220,7 @@ class Component(Dependable):
     @property  # type: ignore[misc]
     @serializable.view(SchemaVersion1Dot3)
     @serializable.view(SchemaVersion1Dot4)
+    @serializable.view(SchemaVersion1Dot4CbomVersion1Dot0)
     @serializable.xml_sequence(20)
     def evidence(self) -> Optional[ComponentEvidence]:
         """
@@ -1223,6 +1237,7 @@ class Component(Dependable):
 
     @property  # type: ignore[misc]
     @serializable.view(SchemaVersion1Dot4)
+    @serializable.view(SchemaVersion1Dot4CbomVersion1Dot0)
     @serializable.xml_sequence(21)
     def release_notes(self) -> Optional[ReleaseNotes]:
         """
@@ -1236,6 +1251,22 @@ class Component(Dependable):
     @release_notes.setter
     def release_notes(self, release_notes: Optional[ReleaseNotes]) -> None:
         self._release_notes = release_notes
+
+    @property  # type: ignore[misc]
+    @serializable.view(SchemaVersion1Dot4CbomVersion1Dot0)
+    @serializable.xml_sequence(22)
+    def crypto_properties(self) -> Optional[CryptoProperties]:
+        """
+        Crypto Properties is a way to describe the cryptographic assets that exist within an application
+
+        Returns:
+            `CryptoProperties` if set else `None`
+        """
+        return self._crypto_properties
+
+    @crypto_properties.setter
+    def crypto_properties(self, crypto_properties: Optional[CryptoProperties]) -> None:
+        self._crypto_properties = crypto_properties
 
     def get_all_nested_components(self, include_self: bool = False) -> Set["Component"]:
         components = set()
@@ -1269,7 +1300,7 @@ class Component(Dependable):
             self.type, self.mime_type, self.supplier, self.author, self.publisher, self.group, self.name,
             self.version, self.description, self.scope, tuple(self.hashes), tuple(self.licenses), self.copyright,
             self.cpe, self.purl, self.swid, self.pedigree, tuple(self.external_references), tuple(self.properties),
-            tuple(self.components), self.evidence, self.release_notes, self.modified
+            tuple(self.components), self.evidence, self.release_notes, self.modified, self.crypto_properties
         ))
 
     def __repr__(self) -> str:
