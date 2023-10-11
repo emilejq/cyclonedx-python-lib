@@ -18,6 +18,7 @@
 # Copyright (c) OWASP Foundation. All Rights Reserved.
 
 from abc import ABC, abstractmethod
+from enum import Enum
 from typing import Any, Iterable, List, Optional, Set
 
 import serializable
@@ -27,6 +28,7 @@ from cyclonedx.model import ComparableTuple
 from cyclonedx.serialization import BomRefHelper
 
 from .bom_ref import BomRef
+from ..schema.schema import SchemaVersion1Dot4CbomVersion1Dot0
 
 
 class DependencyDependencies(serializable.BaseHelper):  # type: ignore
@@ -47,6 +49,17 @@ class DependencyDependencies(serializable.BaseHelper):  # type: ignore
         return dependencies
 
 
+class DependencyType(str, Enum):
+    """
+    Enum object that defines the permissible 'types' for a dependency relationship according to the CBOM schema.
+
+    .. note::
+        See the CycloneDX Schema definition: https://github.com/IBM/CBOM/blob/main/bom-1.4-cbom-1.0.schema.json#L1105
+    """
+    IMPLEMENTS = 'implements'
+    USES = 'uses'
+
+
 @serializable.serializable_class
 class Dependency:
     """
@@ -56,9 +69,11 @@ class Dependency:
         See https://cyclonedx.org/docs/1.4/xml/#type_dependencyType
     """
 
-    def __init__(self, ref: BomRef, dependencies: Optional[Iterable["Dependency"]] = None) -> None:
+    def __init__(self, ref: BomRef, dependencies: Optional[Iterable["Dependency"]] = None,
+                 dependency_type: Optional[DependencyType] = None) -> None:
         self.ref = ref
         self.dependencies = SortedSet(dependencies or [])
+        self.dependency_type = dependency_type
 
     @property  # type: ignore[misc]
     @serializable.type_mapping(BomRefHelper)
@@ -81,6 +96,16 @@ class Dependency:
     def dependencies(self, dependencies: Iterable["Dependency"]) -> None:
         self._dependencies = SortedSet(dependencies)
 
+    @property  # type: ignore[misc]
+    @serializable.view(SchemaVersion1Dot4CbomVersion1Dot0)
+    @serializable.xml_attribute()
+    def dependency_type(self) -> DependencyType:
+        return self._dependency_type
+
+    @dependency_type.setter
+    def dependency_type(self, dependency_type: DependencyType) -> None:
+        self._dependency_type = dependency_type
+
     def dependencies_as_bom_refs(self) -> Set[BomRef]:
         return set(map(lambda d: d.ref, self.dependencies))
 
@@ -96,7 +121,7 @@ class Dependency:
         return NotImplemented
 
     def __hash__(self) -> int:
-        return hash((self.ref, tuple(self.dependencies)))
+        return hash((self.ref, tuple(self.dependencies), self.dependency_type))
 
     def __repr__(self) -> str:
         return f'<Dependency ref={self.ref}, targets={len(self.dependencies)}>'
