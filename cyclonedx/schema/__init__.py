@@ -39,7 +39,6 @@ class SchemaVersion(str, Enum):
         """
         if 'cbom' in self.value.lower():
             cdx_version, cbom_version = self.value.lower().split('cbom')
-            return f'{cdx_version[1]}.{cdx_version[5]}.{cbom_version[1]}.{cbom_version[5]}'
+            return f'{cdx_version[1]}.{cdx_version[5]}-cbom-{cbom_version[1]}.{cbom_version[5]}'
         else:
             return f'{self.value[1]}.{self.value[5]}'
-
